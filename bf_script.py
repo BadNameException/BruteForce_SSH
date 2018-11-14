@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # coding=utf-8
 # 32-126 : 20-7E
 # Tråder: https://docs.python.org/2/library/threading.html
